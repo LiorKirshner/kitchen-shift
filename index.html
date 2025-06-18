@@ -476,6 +476,8 @@
     <div class="modal-header" style="color: #dc2626">⚠️ אישור הסרת עובד</div>
     <p id="removeWorkerText" style="text-align: center; margin: 20px 0;"></p>
     <div class="modal-buttons">
+      <button class="btn btn-blue" onclick="saveToFirebase()">💾 שמור שבוע</button>
+      <button class="btn btn-gray" onclick="loadHistory()">📊 טען היסטוריה</button>
       <button class="btn btn-danger" onclick="confirmRemoveWorker()" style="flex: 1">כן, הסר עובד</button>
       <button class="btn btn-gray" onclick="hideRemoveWorkerModal()" style="flex: 1">ביטול</button>
     </div>
@@ -1078,6 +1080,62 @@
     document.getElementById('newWorkerName').addEventListener('keypress', function(e) {
       if (e.key === 'Enter') addNewWorker();
     });
+  });
+</script>
+<!-- Firebase SDK with Firestore -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import { getFirestore, collection, addDoc, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+  // הגדרות הפרויקט שלך מ-Firebase
+  const firebaseConfig = {
+    apiKey: "AIzaSyCaiYonDRZCs78i0T39ndgeIGzyQsUa0m8",
+    authDomain: "kitchenshifts-9ad09.firebaseapp.com",
+    projectId: "kitchenshifts-9ad09",
+    storageBucket: "kitchenshifts-9ad09.firebasestorage.app",
+    messagingSenderId: "158717674060",
+    appId: "1:158717674060:web:0a2a3af94cd01e3255aae9",
+    measurementId: "G-EZKBQYGM6R"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  // מחזיר מזהה שבוע כמו "2025-W25"
+  function getWeekId(date) {
+    const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+    const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+    const weekNo = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+    return `${d.getUTCFullYear()}-W${weekNo.toString().padStart(2, '0')}`;
+  }
+
+  // שמירה
+  async function saveCurrentWeek(data) {
+    const today = new Date();
+    const weekId = getWeekId(today);
+    await addDoc(collection(db, "weeks"), {
+      week: weekId,
+      created: today.toISOString(),
+      shifts: data
+    });
+    alert("✅ השבוע נשמר ל-Firebase!");
+  }
+
+  // טעינה
+  async function loadAllWeeks() {
+    const q = query(collection(db, "weeks"), orderBy("created", "desc"));
+    const snapshot = await getDocs(q);
+    const allWeeks = [];
+    snapshot.forEach(doc => allWeeks.push(doc.data()));
+    console.log("📊 שבועות קודמים:", allWeeks);
+    return allWeeks;
+  }
+
+  // זמינות לכל הדף
+  window.saveToFirebase = () => saveCurrentWeek(schedule);
+  window.loadHistory = () => loadAllWeeks().then(weeks => {
+    // תוכל לבנות טבלה או גרף כאן
+    console.log("סטטיסטיקה:", weeks);
   });
 </script>
 </body>
