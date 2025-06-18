@@ -369,6 +369,83 @@
 
   <!-- Workers Management -->
   <div class="card">
+    <!-- גרסה מעודכנת של index.html עם טבלת היסטוריה -->
+    <!-- השינויים כוללים:
+    1. הוספת קוביית "היסטוריית שבועות"
+    2. הוספת פונקציה renderHistoryTable()
+    3. שינוי window.loadHistory לקרוא לה -->
+
+    <!-- החלק שאתה צריך להוסיף מתחת ללוח הזמנים -->
+    <div class="card">
+      <div class="section">
+        <div class="section-title">📚 היסטוריית שבועות</div>
+        <div id="historyTable" class="table-container"></div>
+      </div>
+    </div>
+
+    <!-- בפונקציית הסקריפט הקיימת -->
+    <script>
+      window.loadHistory = () => loadAllWeeks().then(weeks => {
+        renderHistoryTable(weeks);
+      });
+
+      function renderHistoryTable(weeks) {
+        const container = document.getElementById('historyTable');
+        if (!weeks || weeks.length === 0) {
+          container.innerHTML = '<p style="text-align:center; color: #666;">לא קיימים נתונים קודמים</p>';
+          return;
+        }
+
+        const allNames = new Set();
+        weeks.forEach(week => {
+          const shifts = week.shifts || {};
+          Object.values(shifts).forEach(day => {
+            Object.values(day).forEach(shift => {
+              if (shift && typeof shift === 'object') {
+                (shift.cooks || []).forEach(name => allNames.add(name));
+                (shift.responsible || []).forEach(name => allNames.add(name));
+                if (shift.cookingChef) allNames.add(shift.cookingChef);
+                if (shift.saladsChef) allNames.add(shift.saladsChef);
+              }
+            });
+          });
+        });
+
+        const names = Array.from(allNames).sort();
+        let html = '<table><thead><tr><th>שבוע</th>';
+        names.forEach(name => {
+          html += `<th>${name}</th>`;
+        });
+        html += '</tr></thead><tbody>';
+
+        weeks.forEach(week => {
+          const shiftData = week.shifts || {};
+          const weekId = week.week || 'ללא מזהה';
+          const counts = {};
+          names.forEach(n => counts[n] = 0);
+
+          Object.values(shiftData).forEach(day => {
+            Object.values(day).forEach(shift => {
+              if (shift && typeof shift === 'object') {
+                (shift.cooks || []).forEach(name => counts[name] += 1);
+                (shift.responsible || []).forEach(name => counts[name] += 1);
+                if (shift.cookingChef && counts[shift.cookingChef] !== undefined) counts[shift.cookingChef] += 1;
+                if (shift.saladsChef && counts[shift.saladsChef] !== undefined) counts[shift.saladsChef] += 1;
+              }
+            });
+          });
+
+          html += `<tr><td>${weekId}</td>`;
+          names.forEach(name => {
+            html += `<td>${counts[name]}</td>`;
+          });
+          html += '</tr>';
+        });
+
+        html += '</tbody></table>';
+        container.innerHTML = html;
+      }
+    </script>
     <div class="section">
       <div class="section-title">
         👥 ניהול עובדים
