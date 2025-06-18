@@ -356,9 +356,13 @@
         <div class="subtitle">💾 הנתונים נשמרים אוטומטית בדפדפן</div>
       </div>
       <div class="buttons">
-        <button class="btn btn-warning" onclick="clearAllData()">🗑️ נקה</button>
-        <button class="btn btn-danger" onclick="showResetModal()">⚠️ איפוס</button>
-        <button class="btn btn-primary" onclick="exportData()">📥 ייצוא</button>
+        <div class="buttons">
+          <button class="btn btn-warning" onclick="clearAllData()">🗑️ נקה</button>
+          <button class="btn btn-danger" onclick="showResetModal()">⚠️ איפוס</button>
+          <button class="btn btn-primary" onclick="exportData()">📥 ייצוא</button>
+          <button class="btn btn-blue" onclick="saveToFirebase()">💾 שמור שבוע</button>
+          <button class="btn btn-gray" onclick="loadHistory()">📊 טען היסטוריה</button>
+        </div>
       </div>
     </div>
   </div>
